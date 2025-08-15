@@ -1,0 +1,229 @@
+<mujoco model="base">
+  <compiler angle="radian"/>
+
+  <option timestep="0.0005" tolerance="1e-10" integrator="RK4" cone="elliptic" jacobian="sparse" iterations="30"/>
+
+  <size njmax="5000" nconmax="5000"/>
+
+  <visual>
+    <quality shadowsize="2048"/>
+    <map stiffness="700" fogstart="10" fogend="15" znear="0.001" zfar="40" shadowscale="0.5"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+  </visual>
+
+  <statistic meansize="0.05" extent="2"/>
+
+  <extension>
+    <plugin plugin="mujoco.elasticity.cable">
+      <instance name="composite">
+        <config key="twist" value="7859.503362562732"/>
+        <config key="bend" value="1571900.6725125466"/>
+        <config key="flat" value="false"/>
+      </instance>
+    </plugin>
+  </extension>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="1 1 0.9" rgb2="0.9 0.9 0.81" width="512" height="3072"/>
+    <texture type="2d" name="texplane" builtin="checker" mark="cross" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8" width="512" height="512"/>
+    <material name="matplane" texture="texplane" texuniform="true" reflectance="0.3"/>
+  </asset>
+
+  <worldbody>
+    <geom name="floor" size="3 3 0.125" pos="0 0 -10" type="plane" condim="1" material="matplane"/>
+    <geom name="axis_x" size="0.002 0.015" pos="0.015 0 0" quat="0.707107 0 -0.707107 0" type="capsule" rgba="1 0 0 1"/>
+    <geom name="axis_y" size="0.002 0.015" pos="0 0.015 0" quat="0.707107 0.707107 0 0" type="capsule" rgba="0 1 0 1"/>
+    <geom name="axis_z" size="0.002 0.015" pos="0 0 0.015" quat="0 1 0 0" type="capsule" rgba="0 0 1 1"/>
+    <body name="eef_body2" pos="0.5 0 0" quat="0.524059 0.524059 0.474723 0.474723">
+      <geom name="eef_geom2" size="0.006 0.006 0.012" type="box" contype="0" conaffinity="0" mass="10" rgba="0.1 0.8 0.2 0.7"/>
+      <site name="eef_body2_site" pos="0 0 0" size="0.01" group="2" rgba="0 0 0 0"/>
+      <body name="eef_body2_sensor">
+        <site name="sensor_site2" pos="0 0 0" size="0.01" group="2" rgba="0 0 0 0"/>
+      </body>
+    </body>
+    <body name="eef_body" pos="-0.340941 -0.869405 0" quat="0.682102 0.682102 -0.186378 -0.186378">
+      <geom name="eef_geom" size="0.006 0.006 0.012" type="box" contype="0" conaffinity="0" mass="10" rgba="0.8 0.2 0.1 0.7"/>
+      <site name="eef_body_site" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
+      <body name="eef_body_sensor">
+        <site name="sensor_site1" pos="0 0 0" size="0.01" group="1" rgba="0 0 0 0"/>
+      </body>
+    </body>
+    <body name="stiffrope" pos="0.5 0 0">
+      <joint name="freejoint_A" type="free" limited="false" actuatorfrclimited="false"/>
+      <body name="B_0" quat="0.524059 0.524059 0.474723 0.474723">
+        <geom name="G0" size="0.003 0.03 0.0490088" pos="0.0490088 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+        <plugin instance="composite"/>
+        <body name="B_1" pos="0.0980175 0 0" quat="0.995372 0 0.0960979 0">
+          <joint name="J_1" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+          <geom name="G1" size="0.003 0.03 0.0490144" pos="0.0490144 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+          <plugin instance="composite"/>
+          <body name="B_2" pos="0.0980287 0 0" quat="0.99569 0 0.0927395 0">
+            <joint name="J_2" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+            <geom name="G2" size="0.003 0.03 0.0490192" pos="0.0490192 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+            <plugin instance="composite"/>
+            <body name="B_3" pos="0.0980384 0 0" quat="0.995968 0 0.0897062 0">
+              <joint name="J_3" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+              <geom name="G3" size="0.003 0.03 0.0490235" pos="0.0490235 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+              <plugin instance="composite"/>
+              <body name="B_4" pos="0.098047 0 0" quat="0.996213 0 0.0869489 0">
+                <joint name="J_4" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                <geom name="G4" size="0.003 0.03 0.0490272" pos="0.0490272 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                <plugin instance="composite"/>
+                <body name="B_5" pos="0.0980545 0 0" quat="0.99643 0 0.0844286 0">
+                  <joint name="J_5" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                  <geom name="G5" size="0.003 0.03 0.0490306" pos="0.0490306 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                  <plugin instance="composite"/>
+                  <body name="B_6" pos="0.0980612 0 0" quat="0.996623 0 0.0821133 0">
+                    <joint name="J_6" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                    <geom name="G6" size="0.003 0.03 0.0490336" pos="0.0490336 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                    <plugin instance="composite"/>
+                    <body name="B_7" pos="0.0980672 0 0" quat="0.996797 0 0.0799768 0">
+                      <joint name="J_7" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                      <geom name="G7" size="0.003 0.03 0.0490363" pos="0.0490363 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                      <plugin instance="composite"/>
+                      <body name="B_8" pos="0.0980726 0 0" quat="0.996954 0 0.0779973 0">
+                        <joint name="J_8" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                        <geom name="G8" size="0.003 0.03 0.0490387" pos="0.0490387 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                        <plugin instance="composite"/>
+                        <body name="B_9" pos="0.0980775 0 0" quat="0.997096 0 0.0761567 0">
+                          <joint name="J_9" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                          <geom name="G9" size="0.003 0.03 0.049041" pos="0.049041 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                          <plugin instance="composite"/>
+                          <body name="B_10" pos="0.0980819 0 0" quat="0.997226 0 0.0744394 0">
+                            <joint name="J_10" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                            <geom name="G10" size="0.003 0.03 0.049043" pos="0.049043 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                            <plugin instance="composite"/>
+                            <body name="B_11" pos="0.098086 0 0" quat="0.997344 0 0.0728325 0">
+                              <joint name="J_11" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                              <geom name="G11" size="0.003 0.03 0.0490448" pos="0.0490448 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                              <plugin instance="composite"/>
+                              <body name="B_12" pos="0.0980897 0 0" quat="0.997453 0 0.0713245 0">
+                                <joint name="J_12" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                <geom name="G12" size="0.003 0.03 0.0490465" pos="0.0490465 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                <plugin instance="composite"/>
+                                <body name="B_13" pos="0.0980931 0 0" quat="0.997554 0 0.0699058 0">
+                                  <joint name="J_13" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                  <geom name="G13" size="0.003 0.03 0.0490481" pos="0.0490481 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                  <plugin instance="composite"/>
+                                  <body name="B_14" pos="0.0980963 0 0" quat="0.997646 0 0.0685679 0">
+                                    <joint name="J_14" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                    <geom name="G14" size="0.003 0.03 0.0490496" pos="0.0490496 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                    <plugin instance="composite"/>
+                                    <body name="B_15" pos="0.0980992 0 0" quat="0.997733 0 0.0673036 0">
+                                      <joint name="J_15" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                      <geom name="G15" size="0.003 0.03 0.0490509" pos="0.0490509 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                      <plugin instance="composite"/>
+                                      <body name="B_16" pos="0.0981019 0 0" quat="0.997813 0 0.0661062 0">
+                                        <joint name="J_16" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                        <geom name="G16" size="0.003 0.03 0.0490522" pos="0.0490522 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                        <plugin instance="composite"/>
+                                        <body name="B_17" pos="0.0981044 0 0" quat="0.997887 0 0.0649702 0">
+                                          <joint name="J_17" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                          <geom name="G17" size="0.003 0.03 0.0490534" pos="0.0490534 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                          <plugin instance="composite"/>
+                                          <body name="B_18" pos="0.0981068 0 0" quat="0.997957 0 0.0638904 0">
+                                            <joint name="J_18" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                            <geom name="G18" size="0.003 0.03 0.0490545" pos="0.0490545 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                            <plugin instance="composite"/>
+                                            <body name="B_19" pos="0.098109 0 0" quat="0.998022 0 0.0628624 0">
+                                              <joint name="J_19" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                              <geom name="G19" size="0.003 0.03 0.0490555" pos="0.0490555 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                              <plugin instance="composite"/>
+                                              <body name="B_20" pos="0.0981111 0 0" quat="0.998083 0 0.0618823 0">
+                                                <joint name="J_20" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                <geom name="G20" size="0.003 0.03 0.0490565" pos="0.0490565 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                <plugin instance="composite"/>
+                                                <body name="B_21" pos="0.098113 0 0" quat="0.998141 0 0.0609463 0">
+                                                  <joint name="J_21" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                  <geom name="G21" size="0.003 0.03 0.0490574" pos="0.0490574 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                  <plugin instance="composite"/>
+                                                  <body name="B_22" pos="0.0981148 0 0" quat="-0.998195 0 -0.0600514 0">
+                                                    <joint name="J_22" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                    <geom name="G22" size="0.003 0.03 0.0490583" pos="0.0490583 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                    <plugin instance="composite"/>
+                                                    <body name="B_23" pos="0.0981166 0 0" quat="0.998246 0 0.0591945 0">
+                                                      <joint name="J_23" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                      <geom name="G23" size="0.003 0.03 0.0490591" pos="0.0490591 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                      <plugin instance="composite"/>
+                                                      <body name="B_24" pos="0.0981182 0 0" quat="0.998295 0 0.0583732 0">
+                                                        <joint name="J_24" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                        <geom name="G24" size="0.003 0.03 0.0490599" pos="0.0490599 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                        <plugin instance="composite"/>
+                                                        <body name="B_25" pos="0.0981197 0 0" quat="0.998341 0 0.0575849 0">
+                                                          <joint name="J_25" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                          <geom name="G25" size="0.003 0.03 0.0490606" pos="0.0490606 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                          <plugin instance="composite"/>
+                                                          <body name="B_26" pos="0.0981212 0 0" quat="0.998384 0 0.0568276 0">
+                                                            <joint name="J_26" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                            <geom name="G26" size="0.003 0.03 0.0490613" pos="0.0490613 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                            <plugin instance="composite"/>
+                                                            <body name="B_27" pos="0.0981226 0 0" quat="0.998425 0 0.0560993 0">
+                                                              <joint name="J_27" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                              <geom name="G27" size="0.003 0.03 0.0490619" pos="0.0490619 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                              <plugin instance="composite"/>
+                                                              <body name="B_28" pos="0.0981239 0 0" quat="0.998464 0 0.0553981 0">
+                                                                <joint name="J_28" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                                <geom name="G28" size="0.003 0.03 0.0490626" pos="0.0490626 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                                <plugin instance="composite"/>
+                                                                <body name="B_29" pos="0.0981251 0 0" quat="0.998502 0 0.0547225 0">
+                                                                  <joint name="J_29" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                                  <geom name="G29" size="0.003 0.03 0.0490632" pos="0.0490632 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                                  <plugin instance="composite"/>
+                                                                  <body name="B_30" pos="0.0981263 0 0" quat="0.998537 0 0.0540709 0">
+                                                                    <joint name="J_30" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                                    <geom name="G30" size="0.003 0.03 0.0490637" pos="0.0490637 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                                    <plugin instance="composite"/>
+                                                                    <body name="B_last" pos="0.0981275 0 0" quat="0.998571 0 0.053442 0">
+                                                                      <joint name="J_last" pos="0 0 0" type="ball" group="3" actuatorfrclimited="false" damping="0.1"/>
+                                                                      <geom name="G31" size="0.003 0.03 0.0490643" pos="0.0490643 0 0" quat="0.707107 0 -0.707107 0" type="box" conaffinity="0" condim="1" solref="0.001" mass="0.00260262" rgba="0.1 0.0533333 0.673333 1"/>
+                                                                      <plugin instance="composite"/>
+                                                                      <body name="B_last2" pos="0.0981285 0 0">
+                                                                        <plugin instance="composite"/>
+                                                                      </body>
+                                                                    </body>
+                                                                  </body>
+                                                                </body>
+                                                              </body>
+                                                            </body>
+                                                          </body>
+                                                        </body>
+                                                      </body>
+                                                    </body>
+                                                  </body>
+                                                </body>
+                                              </body>
+                                            </body>
+                                          </body>
+                                        </body>
+                                      </body>
+                                    </body>
+                                  </body>
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <equality>
+    <weld name="weld_end" body1="B_last" body2="eef_body_sensor" anchor="0 0 0" relpose="0.0981285 0 0 1 0 0 0" torquescale="1" solref="0.001"/>
+    <weld name="weld_start" body1="B_0" body2="eef_body2_sensor" anchor="0 0 0" relpose="0 0 0 1 0 0 0" torquescale="1" solref="0.001"/>
+  </equality>
+
+  <sensor>
+    <torque site="sensor_site1" name="torque_A"/>
+    <force site="sensor_site1" name="force_A"/>
+    <torque site="sensor_site2" name="torque_B"/>
+    <force site="sensor_site2" name="force_B"/>
+  </sensor>
+</mujoco>
