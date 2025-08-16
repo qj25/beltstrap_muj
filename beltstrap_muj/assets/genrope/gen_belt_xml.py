@@ -28,10 +28,12 @@ def generate_curve_by_length(total_length, num_points, base_radius, expansion_co
     """
     if expansion_coeff == 0:  
         # Circle case: total_length = circumference
-        R = total_length / (2 * np.pi)
-        angles = np.linspace(0, 2*np.pi, num_points, endpoint=False)
-        x = R * np.cos(angles)
-        y = R * np.sin(angles)
+        theta_max = total_length / base_radius
+        print(f"Circle case: theta_max = {theta_max}")
+        angles = np.linspace(0, theta_max, num_points, endpoint=False)
+        print(f"Circle case: theta_max = {angles}")
+        x = base_radius * np.cos(angles)
+        y = base_radius * np.sin(angles)
         return np.column_stack((x, y))
     
     # Spiral case: radius grows as r(theta) = base_radius + a*theta
@@ -50,16 +52,24 @@ def generate_curve_by_length(total_length, num_points, base_radius, expansion_co
 
     # Find theta_max where arc length = total_length
     theta_max = brentq(lambda th: spiral_arc_length(th) - total_length, 0, 1000)
-    
+
     # Now sample evenly spaced arc lengths
     target_lengths = np.linspace(0, total_length, num_points)
     thetas = np.zeros(num_points)
     for i, L in enumerate(target_lengths):
+        if i == len(target_lengths) - 1:
+            thetas[i] = theta_max
+            continue
         thetas[i] = brentq(lambda th: spiral_arc_length(th) - L, 0, theta_max)
     
     radii = base_radius + a * thetas
     x = radii * np.cos(thetas)
     y = radii * np.sin(thetas)
+
+    print(target_lengths)
+    print(x)
+    print(y)
+    input()
     
     return np.column_stack((x, y))
 
@@ -108,6 +118,7 @@ def generate_belt_xml(
     if z_pos is None:
         z_pos = np.zeros(n_pieces+1)
     wire_pos = np.column_stack((circle_pos, z_pos))
+    input(wire_pos)
 
     body_positions, body_quats, joint_quats, body_relpos = compute_wire_frames(wire_pos)
     # print(f"jcalc = {joint_quats}")
