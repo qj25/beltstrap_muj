@@ -57,12 +57,12 @@ stiff_vals = [
 # Define shape of belt
 if belt_from_circle:
     belt_initradius = 0.5
-    total_length = 2 * np.pi * belt_initradius *1.49
+    total_length = 2 * np.pi * belt_initradius * 1.49
     mass = mass_per_length * total_length
     rgba_wire = "0.1 0.0533333 0.673333 1"
     generate_belt_xml(
         belt_initradius=belt_initradius,
-        expansion_coeff=0.0,
+        expansion_coeff=0.01,
         r_len=total_length,
         n_pieces=n_nodes-1,
         thickness=thickness,

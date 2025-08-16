@@ -17,9 +17,14 @@ def compute_wire_frames(wire_pos):
     # Initial frame: x = tangent, y = arbitrary, z = cross(x, y)
     frames = []
     x0 = tangents[0]
-    y0 = np.array([0, 1, 0])
-    if np.abs(np.dot(x0, y0)) > 0.99:
-        y0 = np.array([0, 0, 1])
+    x1 = tangents[1]
+    curv = np.cross(x0,x1)
+    if np.linalg.norm(curv) > 1e-10:
+        y0 = curv / np.linalg.norm(curv)
+    else:
+        y0 = np.array([0, 1, 0])
+        if np.abs(np.dot(x0, y0)) > 0.99:
+            y0 = np.array([0, 0, 1])
     z0 = np.cross(x0, y0)
     z0 /= np.linalg.norm(z0)
     y0 = np.cross(z0, x0)
@@ -31,7 +36,7 @@ def compute_wire_frames(wire_pos):
         prev_x = frames[-1][:,0]
         new_x = tangents[i]
         axis = np.cross(prev_x, new_x)
-        if np.linalg.norm(axis) < 1e-8:
+        if np.linalg.norm(axis) < 1e-10:
             frames.append(frames[-1])
             continue
         axis /= np.linalg.norm(axis)
@@ -113,6 +118,10 @@ def compute_wire_frames(wire_pos):
         # print(f"cjq_{i} = {cum_joint_quats}")
         # input()
     joint_quats = np.array(joint_quats)
+    # for i in range(len(joint_quats)):
+    #     joint_quats[i] = np.array([9.90487643e-01, 0.00000000e+00, 1.37601705e-01, -1.38777878e-17])
+    # joint_quats[:,2] = -joint_quats[:,3]
+    # joint_quats[:,3] = joint_quats[:,1]
 
     # Let's assume you already have body_positions (N+1, 3) and body_quats (N+1, 4)
     N = wire_pos.shape[0] - 1
@@ -123,10 +132,7 @@ def compute_wire_frames(wire_pos):
         delta = body_positions[i] - body_positions[i-1]
         prev_quat = body_quats[i-1]  # [w, x, y, z] or [x, y, z, w] depending on your convention
         # If your quats are [w, x, y, z], convert to [x, y, z, w] for scipy
-        if prev_quat.shape[0] == 4 and prev_quat[0] != 0:  # likely [w, x, y, z]
-            prev_quat_scipy = np.array([prev_quat[1], prev_quat[2], prev_quat[3], prev_quat[0]])
-        else:
-            prev_quat_scipy = prev_quat
+        prev_quat_scipy = np.array([prev_quat[1], prev_quat[2], prev_quat[3], prev_quat[0]])
         r = R.from_quat(prev_quat_scipy)
         relpos = r.inv().apply(delta)
         body_relpos[i] = relpos

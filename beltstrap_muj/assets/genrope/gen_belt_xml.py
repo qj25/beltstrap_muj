@@ -29,9 +29,7 @@ def generate_curve_by_length(total_length, num_points, base_radius, expansion_co
     if expansion_coeff == 0:  
         # Circle case: total_length = circumference
         theta_max = total_length / base_radius
-        print(f"Circle case: theta_max = {theta_max}")
         angles = np.linspace(0, theta_max, num_points, endpoint=False)
-        print(f"Circle case: theta_max = {angles}")
         x = base_radius * np.cos(angles)
         y = base_radius * np.sin(angles)
         return np.column_stack((x, y))
@@ -66,11 +64,6 @@ def generate_curve_by_length(total_length, num_points, base_radius, expansion_co
     x = radii * np.cos(thetas)
     y = radii * np.sin(thetas)
 
-    print(target_lengths)
-    print(x)
-    print(y)
-    input()
-    
     return np.column_stack((x, y))
 
 def generate_belt_xml(
@@ -118,7 +111,6 @@ def generate_belt_xml(
     if z_pos is None:
         z_pos = np.zeros(n_pieces+1)
     wire_pos = np.column_stack((circle_pos, z_pos))
-    input(wire_pos)
 
     body_positions, body_quats, joint_quats, body_relpos = compute_wire_frames(wire_pos)
     # print(f"jcalc = {joint_quats}")
