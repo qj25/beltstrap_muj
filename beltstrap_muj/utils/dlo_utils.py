@@ -26,6 +26,7 @@ def displaced_cable_positions(positions, quaternions, dist=None):
     N = positions.shape[0]
     displaced = np.zeros_like(positions)
     local_offset = np.array([0.0, 0.0, dist])
+    # local_offset = np.array([0.0, dist, 0.0])
 
     for i in range(N):
         R = quat_to_mat(quaternions[i])

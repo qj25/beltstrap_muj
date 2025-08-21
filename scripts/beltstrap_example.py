@@ -10,7 +10,7 @@ from beltstrap_muj.utils.mjc2_utils import init_plugins
 from beltstrap_muj.utils.dlo_utils import interpolate_chain_positions, displaced_cable_positions
 # from beltstrap_muj.utils.real2sim_utils import compute_wire_frames
 from beltstrap_muj.assets.genrope.gen_dlo_xml import generate_dlo_xml
-from beltstrap_muj.assets.genrope.gen_belt_xml import generate_belt_xml
+from beltstrap_muj.assets.genrope.gen_belt_xml import generate_belt_xml, generate_belt_xml_native
 
 
 # Settings
@@ -21,7 +21,7 @@ do_render = True
 # beta_bar = 0.789
 # alpha_bar = 0.001196450659614982    # Obtained from simple PI
 # beta_bar = 0.001749108044378543
-alpha_bar = 0.0001
+alpha_bar = 0.00001
 beta_bar = 0.000001
 mass_per_length = 0.079/2.98
 thickness = 0.006
@@ -59,7 +59,7 @@ if belt_from_circle:
     belt_initradius = 0.5
     total_length = 2 * np.pi * belt_initradius * 1.49
     mass = mass_per_length * total_length
-    rgba_wire = "0.1 0.0533333 0.673333 1"
+    rgba_wire = "0.1 0.0533333 0.673333 0.2"
     generate_belt_xml(
         belt_initradius=belt_initradius,
         expansion_coeff=0.01,
@@ -74,6 +74,18 @@ if belt_from_circle:
         xml_path=xml_path,
         rgba=rgba_wire
     )
+    # generate_belt_xml_native(
+    #     r_len=total_length,
+    #     n_pieces=n_nodes-1,
+    #     thickness=thickness,
+    #     mass=mass,
+    #     j_damp=j_damp,
+    #     con_val=(1,0),
+    #     stiff_bend=stiff_vals[1],
+    #     stiff_twist=stiff_vals[0],
+    #     xml_path=xml_path,
+    #     rgba=rgba_wire
+    # )
 else:
     wire_pos = np.array([
         [0.0,0,0],
@@ -115,10 +127,10 @@ xml_string = xml.get_xml_string()
 model = mujoco.MjModel.from_xml_string(xml_string)
 mujoco.mj_saveLastXML(xml_path,model)
 data = mujoco.MjData(model)
-# model.opt.gravity[-1] = 0.0
+model.opt.gravity[-1] = 0.0
 # model.opt.gravity[-1] = -9.81
 
-known_body_name = "B_0"
+known_body_name = "B_first"
 plgn_instance = model.body_plugin[
     mjc2.obj_name2id(model, "body", known_body_name)
 ]
@@ -128,7 +140,7 @@ r_pieces = n_nodes - 1
 vec_bodyid = np.zeros(r_pieces, dtype=int)
 for i in range(r_pieces):
     if i == 0:
-        i_name = '0'
+        i_name = 'first'
     elif i == r_pieces-1:
         i_name = 'last'
     else:

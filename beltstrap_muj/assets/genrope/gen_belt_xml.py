@@ -84,7 +84,7 @@ def generate_belt_xml(
     init_quat=None,
     xml_path=None,
     calcEnergy=True,
-    dlo_type="cable",
+    dlo_type="wire",
     rgba="0.1 0.0533333 0.673333 1",
 ):
     """
@@ -124,7 +124,7 @@ def generate_belt_xml(
     # contype = 1 if collision_on else 0
     # conaffinity = 1 if collision_on else 0
 
-    # Compute world position and quaternion for B_0 and B_last
+    # Compute world position and quaternion for B_first and B_last
     def accumulate_chain_world_pose(init_pos, init_quat, body_relpos, body_quats, idx):
         pos = np.array(init_pos)
         quat = np.array(init_quat)
@@ -187,6 +187,7 @@ def generate_belt_xml(
     if dlo_type == "wire":
         xml.append(f'        <config key="calcEnergy" value="{"true" if calcEnergy else "false"}"/>')
         xml.append(f'        <config key="pqsActive" value="true"/>')
+        xml.append(f'        <config key="boolInclTwist" value="true"/>')
     xml.append('      </instance>')
     xml.append('    </plugin>')
     xml.append('  </extension>')
@@ -221,7 +222,13 @@ def generate_belt_xml(
 
     indent = "      "
     for i in range(n_pieces):
-        name = f'B_{i}' if i < n_pieces-1 else 'B_last'
+        if i == 0:
+            i_name = 'first'
+        elif i == n_pieces-1:
+            i_name = 'last'
+        else:
+            i_name = str(i)
+        name = f'B_{i_name}'
         # Use joint_quats for body quats
         pos = body_relpos[i]
         g_length = np.linalg.norm(body_relpos[i+1])/2.0
@@ -258,7 +265,7 @@ def generate_belt_xml(
 
     xml.append('  <equality>')
     xml.append('    <weld name="weld_end" body1="B_last" body2="eef_body_sensor" anchor="0 0 0" relpose="0 0 0 0 0 0 0" torquescale="1" solref="0.001"/>')
-    xml.append('    <weld name="weld_start" body1="B_0" body2="eef_body2_sensor" anchor="0 0 0" relpose="0 0 0 0 0 0 0" torquescale="1" solref="0.001"/>')
+    xml.append('    <weld name="weld_start" body1="B_first" body2="eef_body2_sensor" anchor="0 0 0" relpose="0 0 0 0 0 0 0" torquescale="1" solref="0.001"/>')
     xml.append('  </equality>')
 
     xml.append('  <sensor>')
@@ -267,6 +274,131 @@ def generate_belt_xml(
     xml.append('    <torque site="sensor_site2" name="torque_B"/>')
     xml.append('    <force site="sensor_site2" name="force_B"/>')
     xml.append('  </sensor>')
+    xml.append('</mujoco>')
+
+    with open(obj_path, 'w') as f:
+        f.write('\n'.join(xml))
+    print(f'Wrote {obj_path}')
+
+def generate_belt_xml_native(
+    r_len,
+    flat=False,
+    n_pieces=41,
+    thickness=0.01,
+    width=0.06,
+    mass=1.0,
+    j_damp=0.015,
+    con_val=(0,0),
+    stiff_bend=4e6,
+    stiff_twist=1e7,
+    init_pos=None,
+    init_quat=None,
+    xml_path=None,
+    calcEnergy=True,
+    dlo_type="wire",
+    rgba="0.8 0.2 0.1 1",
+    curve="s",
+    vmax=0.05,
+):
+    """
+    Generate a MuJoCo XML using the native composite plugin to create a cable/wire
+    rather than explicitly defining each body/geom.
+
+    Parameters mirror `generate_belt_xml` where possible, but only a subset are
+    used for the native composite definition.
+    """
+    # Resolve output path
+    if xml_path is None:
+        obj_path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            'belt.xml'
+        )
+    else:
+        obj_path = xml_path
+
+    # Defaults
+    if init_pos is None:
+        init_pos = np.zeros(3)
+    if init_quat is None:
+        init_quat = np.array([1.0, 0.0, 0.0, 0.0])
+    (contype, conaffinity) = con_val
+
+    # MuJoCo expects count as number of points along main axis for composite
+    main_count = max(2, int(n_pieces+1))
+
+    # Heuristic: map r_len to composite size. In MuJoCo examples size acts as an overall
+    # length scale for the curve. We set it to half-length so the total span is ~r_len.
+    # Users can fine-tune via r_len and n_pieces as needed.
+    comp_size = max(1e-6, float(r_len))
+    mass_per = mass / n_pieces
+
+    flat_str = "true" if flat else "false"
+
+    xml = []
+    xml.append('<mujoco model="base_native">')
+    xml.append('  <compiler angle="radian" autolimits="true"/>')
+    xml.append('  <option timestep="0.0005" tolerance="1e-10" integrator="RK4" cone="elliptic" jacobian="sparse" iterations="30"/>')
+    xml.append('  <size njmax="5000" nconmax="5000"/>')
+    xml.append('  <visual>')
+    xml.append('    <quality shadowsize="2048"/>')
+    xml.append('    <map stiffness="700" fogstart="10" fogend="15" znear="0.001" zfar="40" shadowscale="0.5"/>')
+    xml.append('    <rgba haze="0.15 0.25 0.35 1"/>')
+    xml.append('  </visual>')
+    xml.append('  <statistic meansize="0.05" extent="2"/>')
+
+    # Native cable/wire plugin
+    xml.append('  <extension>')
+    xml.append(f'    <plugin plugin="mujoco.elasticity.{dlo_type}"/>')
+    xml.append('  </extension>')
+
+    # Assets (keep minimal plane material)
+    xml.append('  <asset>')
+    xml.append('    <texture type="skybox" builtin="gradient" rgb1="1 1 0.9" rgb2="0.9 0.9 0.81" width="512" height="3072"/>')
+    xml.append('    <texture type="2d" name="texplane" builtin="checker" mark="cross" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8" width="512" height="512"/>')
+    xml.append('    <material name="matplane" texture="texplane" texuniform="true" reflectance="0.3"/>')
+    xml.append('  </asset>')
+
+    xml.append('  <worldbody>')
+    xml.append('    <geom name="floor" size="3 3 0.125" pos="0 0 -10" type="plane" condim="1" material="matplane"/>')
+    xml.append('    <geom name="axis_x" type="capsule" fromto="0 0 0 0.03 0 0" size="0.002" rgba="1 0 0 1"/>')
+    xml.append('    <geom name="axis_y" type="capsule" fromto="0 0 0 0 0.03 0" size="0.002" rgba="0 1 0 1"/>')
+    xml.append('    <geom name="axis_z" type="capsule" fromto="0 0 0 0 0 0.03" size="0.002" rgba="0 0 1 1"/>')
+
+    # Add box
+    xml.append(f'    <body name="eef_body2" pos="{init_pos[0]} {init_pos[1]} {init_pos[2]}" quat="{init_quat[0]} {init_quat[1]} {init_quat[2]} {init_quat[3]}">')
+    xml.append(f'      <geom name="eef_geom2" size="{thickness} {thickness} {thickness*2}" type="box" contype="0" conaffinity="0" mass="10" rgba="0.1 0.8 0.2 0.7"/>')
+    xml.append('      <site name="eef_body2_site" pos="0 0 0" size="0.01" group="2" rgba="0 0 0 0"/>')
+    xml.append('      <body name="eef_body2_sensor">')
+    xml.append('        <site name="sensor_site2" pos="0 0 0" size="0.01" group="2" rgba="0 0 0 0"/>')
+    xml.append('      </body>')
+    xml.append('    </body>')
+
+
+    # Place composite inside a transform body to account for init pos/quat
+    xml.append(f'    <body name="composite_root" pos="{init_pos[0]} {init_pos[1]} {init_pos[2]}" quat="{init_quat[0]} {init_quat[1]} {init_quat[2]} {init_quat[3]}">')
+    xml.append(f'      <composite type="{dlo_type}" curve="{curve}" count="{main_count} 1 1" size="{comp_size}" offset="0 0 0" initial="none">')
+    xml.append(f'        <plugin plugin="mujoco.elasticity.{dlo_type}">')
+    xml.append(f'          <config key="twist" value="{stiff_twist}"/>')
+    xml.append(f'          <config key="bend" value="{stiff_bend}"/>')
+    # xml.append(f'          <config key="vmax" value="{vmax}"/>')
+    xml.append(f'          <config key="flat" value="{flat_str}"/>')
+    if dlo_type == "wire":
+        xml.append(f'        <config key="calcEnergy" value="{"true" if calcEnergy else "false"}"/>')
+        xml.append(f'        <config key="pqsActive" value="true"/>')
+        xml.append(f'        <config key="boolInclTwist" value="false"/>')
+
+    xml.append('        </plugin>')
+    xml.append(f'        <joint kind="main" damping="{j_damp}"/>')
+    # Capsule radius: use half of thickness to roughly match prior box half-width
+    xml.append(f'        <geom type="box" size="{r_len/(n_pieces)/2.0} {width/2} {thickness/2}" rgba="{rgba}" mass="{mass_per}" condim="1" contype="{contype}" conaffinity="{conaffinity}"/>')
+    xml.append('      </composite>')
+    xml.append('    </body>')
+
+    xml.append('  </worldbody>')
+
+    # Expose the automatically created names (B_first ... B_last, S_first ... S_last) for downstream references
+    # No default equality constraints here; the caller can add them as needed based on autogenerated names.
+
     xml.append('</mujoco>')
 
     with open(obj_path, 'w') as f:

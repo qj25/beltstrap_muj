@@ -54,7 +54,7 @@ def generate_dlo_xml(
     # contype = 1 if collision_on else 0
     # conaffinity = 1 if collision_on else 0
 
-    # Compute world position and quaternion for B_0 and B_last
+    # Compute world position and quaternion for B_first and B_last
     def accumulate_chain_world_pose(init_pos, init_quat, body_relpos, body_quats, idx):
         pos = np.array(init_pos)
         quat = np.array(init_quat)
@@ -151,7 +151,13 @@ def generate_dlo_xml(
 
     indent = "      "
     for i in range(n_pieces):
-        name = f'B_{i}' if i < n_pieces-1 else 'B_last'
+        if i == 0:
+            i_name = 'first'
+        elif i == n_pieces-1:
+            i_name = 'last'
+        else:
+            i_name = str(i)
+        name = f'B_{i_name}'
         # Use joint_quats for body quats
         pos = body_relpos[i]
         g_length = np.linalg.norm(body_relpos[i+1])/2.0
@@ -188,7 +194,7 @@ def generate_dlo_xml(
 
     xml.append('  <equality>')
     xml.append('    <weld name="weld_end" body1="B_last" body2="eef_body_sensor" anchor="0 0 0" relpose="0 0 0 0 0 0 0" torquescale="1" solref="0.001"/>')
-    xml.append('    <weld name="weld_start" body1="B_0" body2="eef_body2_sensor" anchor="0 0 0" relpose="0 0 0 0 0 0 0" torquescale="1" solref="0.001"/>')
+    xml.append('    <weld name="weld_start" body1="B_first" body2="eef_body2_sensor" anchor="0 0 0" relpose="0 0 0 0 0 0 0" torquescale="1" solref="0.001"/>')
     xml.append('  </equality>')
 
     xml.append('  <sensor>')
