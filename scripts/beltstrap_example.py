@@ -127,7 +127,7 @@ xml_string = xml.get_xml_string()
 model = mujoco.MjModel.from_xml_string(xml_string)
 mujoco.mj_saveLastXML(xml_path,model)
 data = mujoco.MjData(model)
-model.opt.gravity[-1] = 0.0
+# model.opt.gravity[-1] = 0.0
 # model.opt.gravity[-1] = -9.81
 
 known_body_name = "B_first"

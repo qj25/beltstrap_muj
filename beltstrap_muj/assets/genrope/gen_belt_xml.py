@@ -187,7 +187,8 @@ def generate_belt_xml(
     if dlo_type == "wire":
         xml.append(f'        <config key="calcEnergy" value="{"true" if calcEnergy else "false"}"/>')
         xml.append(f'        <config key="pqsActive" value="true"/>')
-        xml.append(f'        <config key="boolInclTwist" value="true"/>')
+        xml.append(f'        <config key="fullDyn" value="true"/>')
+        # xml.append(f'        <config key="boolInclTwist" value="true"/>')
     xml.append('      </instance>')
     xml.append('    </plugin>')
     xml.append('  </extension>')
@@ -383,9 +384,10 @@ def generate_belt_xml_native(
     # xml.append(f'          <config key="vmax" value="{vmax}"/>')
     xml.append(f'          <config key="flat" value="{flat_str}"/>')
     if dlo_type == "wire":
-        xml.append(f'        <config key="calcEnergy" value="{"true" if calcEnergy else "false"}"/>')
-        xml.append(f'        <config key="pqsActive" value="true"/>')
-        xml.append(f'        <config key="boolInclTwist" value="false"/>')
+        xml.append(f'          <config key="calcEnergy" value="{"true" if calcEnergy else "false"}"/>')
+        xml.append(f'          <config key="pqsActive" value="true"/>')
+        xml.append(f'          <config key="fullDyn" value="true"/>')
+        # xml.append(f'        <config key="boolInclTwist" value="false"/>')
 
     xml.append('        </plugin>')
     xml.append(f'        <joint kind="main" damping="{j_damp}"/>')

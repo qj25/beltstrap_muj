@@ -21,7 +21,7 @@
         <config key="flat" value="false"/>
         <config key="pqsActive" value="true"/>
         <config key="calcEnergy" value="true"/>
-        <config key="boolInclTwist" value="true"/>
+        <config key="fullDyn" value="true"/>
       </instance>
     </plugin>
   </extension>
